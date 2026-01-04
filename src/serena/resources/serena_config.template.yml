@@ -51,6 +51,15 @@ ls_specific_settings: {}
 # (same entry as in project.yml) to the options.
 # Have a look at the docstring of the constructors of the LS implementations within solidlsp (e.g., for C# or PHP) to see which options are available.
 # No documentation on options means no options are available.
+#
+# Example for Python (Pyright):
+#   ls_specific_settings:
+#     python:
+#       allowed_dot_dirs:
+#         - .claude
+#         - .config
+# By default, dot-directories are excluded from workspace symbol search.
+# Use allowed_dot_dirs to include specific ones that contain Python code.
 
 tool_timeout: 240
 # timeout, in seconds, after which tool executions are terminated

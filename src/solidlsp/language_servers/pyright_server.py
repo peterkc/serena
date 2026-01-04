@@ -12,7 +12,7 @@ from typing import cast
 from overrides import override
 
 from solidlsp.ls import SolidLanguageServer
-from solidlsp.ls_config import LanguageServerConfig
+from solidlsp.ls_config import Language, LanguageServerConfig
 from solidlsp.lsp_protocol_handler.lsp_types import InitializeParams
 from solidlsp.lsp_protocol_handler.server import ProcessLaunchInfo
 from solidlsp.settings import SolidLSPSettings
@@ -24,6 +24,12 @@ class PyrightServer(SolidLanguageServer):
     """
     Provides Python specific instantiation of the LanguageServer class using Pyright.
     Contains various configurations and settings specific to Python.
+
+    You can pass the following entries in ls_specific_settings["python"]:
+        - allowed_dot_dirs: List of dot-directories to include in workspace symbol search.
+          By default, directories starting with '.' are excluded. Use this to include
+          directories like '.claude' that contain Python code.
+          Example: [".claude", ".config"]
     """
 
     # Timeout for initial workspace analysis (seconds)
@@ -47,13 +53,19 @@ class PyrightServer(SolidLanguageServer):
         self.analysis_complete = threading.Event()
         self.found_source_files = False
 
-    # Dot-directories that should NOT be ignored (contain useful Python code)
-    ALLOWED_DOT_DIRS = {".claude"}
+        # Load allowed_dot_dirs from config (default: empty set)
+        # By default, dot-directories are ignored in workspace symbol search.
+        # Configure allowed_dot_dirs in serena_config.yml to include specific ones.
+        python_settings = solidlsp_settings.get_ls_specific_settings(Language.PYTHON)
+        allowed_dot_dirs_config = python_settings.get("allowed_dot_dirs", [])
+        self._allowed_dot_dirs: set[str] = set(allowed_dot_dirs_config) if allowed_dot_dirs_config else set()
+        if self._allowed_dot_dirs:
+            log.info(f"Allowing dot directories in workspace search: {self._allowed_dot_dirs}")
 
     @override
     def is_ignored_dirname(self, dirname: str) -> bool:
         # Allow specific dot-directories that contain Python code
-        if dirname in self.ALLOWED_DOT_DIRS:
+        if dirname in self._allowed_dot_dirs:
             return False
         return super().is_ignored_dirname(dirname) or dirname in ["venv", "__pycache__"]
 
