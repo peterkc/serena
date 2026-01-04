@@ -47,8 +47,14 @@ class PyrightServer(SolidLanguageServer):
         self.analysis_complete = threading.Event()
         self.found_source_files = False
 
+    # Dot-directories that should NOT be ignored (contain useful Python code)
+    ALLOWED_DOT_DIRS = {".claude"}
+
     @override
     def is_ignored_dirname(self, dirname: str) -> bool:
+        # Allow specific dot-directories that contain Python code
+        if dirname in self.ALLOWED_DOT_DIRS:
+            return False
         return super().is_ignored_dirname(dirname) or dirname in ["venv", "__pycache__"]
 
     @staticmethod
