@@ -271,6 +271,7 @@ addopts = "--snapshot-patch-pycharm-diff"
 markers = [
   "clojure: language server running for Clojure",
   "python: language server running for Python",
+  "python_ty: language server running for Python (using ty type checker)",
   "go: language server running for Go",
   "java: language server running for Java",
   "kotlin: language server running for kotlin",
